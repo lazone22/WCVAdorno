@@ -131,6 +131,11 @@ class WCVendors_Pro_Public {
 		$dashboard_page_id = (array) get_option( 'wcvendors_dashboard_page_id', array() );
 		$feedback_page_id  = get_option( 'wcvendors_feedback_page_id' );
 
+		// If the page is a 404 don't load anything
+		if ( is_404() ) {
+			return;
+		}
+
 		$pages = wcv_get_pages();
 
 		$general_class = 'wcvendors wcvendors-pro wcvendors-page';
@@ -433,7 +438,7 @@ class WCVendors_Pro_Public {
 				}
 
 				$general_settings_params = array(
-					'date_format'                      => apply_filters( 'wcv-datepicker-dateformat', 'yy-m-d' ),
+					'date_format'                      => apply_filters( 'wcv-datepicker-dateformat', 'Y-m-d' ),
 					'ajax_url'                         => admin_url( 'admin-ajax.php' ),
 					'wcv_json_unique_store_name_nonce' => wp_create_nonce( 'wcv-unique-store-name' ),
 					'use_location_picker_text'         => apply_filters( 'wcv_use_location_picker_text', __( 'Show map', 'wcvendors-pro' ) ),
@@ -736,18 +741,12 @@ class WCVendors_Pro_Public {
 
 
 	/**
-	 * Load theme support
+	 * Load theme support automatically
 	 *
 	 * @since 1.6.0
-	 * @version 1.7.6
+	 * @version 1.7.9
 	 */
 	public function load_theme_support() {
-
-		$theme_support = get_option( 'wcvendors_load_theme_support', 'no' );
-
-		if ( ! wc_string_to_bool( $theme_support ) ) {
-			return;
-		}
 
 		$theme = wp_get_theme();
 
@@ -831,11 +830,14 @@ class WCVendors_Pro_Public {
 			return $tabs;
 		}
 
-		$tabs['policies'] = array(
-			'title'    => sprintf( __( '%s policies', 'wcvendors-pro' ), wcv_get_vendor_name() ),
-			'priority' => 50,
-			'callback' => array( $this, 'product_policy_tab_content' ),
-		);
+		$tabs['policies'] = apply_filters(
+			 'wcv_single_product_policies_tab',
+			array(
+				'title'    => sprintf( __( '%s Policies', 'wcvendors-pro' ), wcv_get_vendor_name() ),
+				'priority' => 50,
+				'callback' => array( $this, 'product_policy_tab_content' ),
+			)
+			);
 
 		return $tabs;
 
